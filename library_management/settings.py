@@ -124,7 +124,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 # Firebase Configuration
-FIREBASE_CONFIG = os.getenv('FIREBASE_CONFIG', os.path.join(BASE_DIR, 'library-management-8a03f-firebase-adminsdk-fbsvc-bb3b748e15.json'))
+FIREBASE_CONFIG = os.getenv('FIREBASE_CONFIG', os.path.join(BASE_DIR, 'firebase-key.json'))
 
 # Logging Configuration
 LOGGING = {
