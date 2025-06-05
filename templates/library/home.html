@@ -1,0 +1,711 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Dashboard - Library Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-counter {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .search-input-group {
+        position: relative;
+    }
+    
+    .search-input-group .form-control {
+        padding-left: 3rem;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input-group .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary-color);
+        z-index: 10;
+        font-size: 1.1rem;
+    }
+    
+    .search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--border-radius-sm);
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+    }
+    
+    .suggestion-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid var(--gray-100);
+        transition: background-color 0.2s ease;
+    }
+    
+    .suggestion-item:hover {
+        background: var(--gray-50);
+    }
+    
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+    
+    .book-row {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .book-row:hover {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+        transform: translateX(5px);
+        box-shadow: var(--shadow-sm);
+        border-radius: var(--border-radius-sm);
+    }
+    
+    .book-id-badge {
+        background: linear-gradient(135deg, var(--gray-600), var(--gray-500));
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow-xs);
+    }
+    
+    .genre-badge-link {
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .genre-badge-link:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .action-btn {
+        transition: all 0.3s ease;
+        transform: scale(0.95);
+    }
+    
+    .action-btn:hover {
+        transform: scale(1);
+    }
+    
+    .loading-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+    
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    
+    .quick-filter {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 25px;
+        padding: 0.375rem 1rem;
+        font-size: 0.875rem;
+        color: var(--primary-color);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .quick-filter:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .quick-filter.active {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .book-title-link {
+        color: var(--gray-800);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .book-title-link:hover {
+        color: var(--primary-color);
+        text-decoration: underline;
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--success-color);
+        display: inline-block;
+        margin-right: 0.5rem;
+        animation: pulse-dot 2s infinite;
+    }
+    
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .enhancement-gradient {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-tachometer-alt"></i> 
+                Library Dashboard
+            </h1>
+            <p class="text-muted mt-2 mb-0">
+                <span class="status-indicator"></span>
+                Welcome to your modern library management system
+            </p>
+            <small class="text-muted">
+                <i class="fas fa-user me-1"></i>
+                Developed by <strong>LI JIAQI</strong> | 
+                <i class="fas fa-id-card me-1"></i>
+                218451 | 
+                <i class="fas fa-university me-1"></i>
+                UPM Software Engineering
+            </small>
+        </div>
+        <a href="{% url 'add_book' %}" class="btn btn-primary float-animation">
+            <i class="fas fa-plus"></i> Add New Book
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; height: 160px; display: flex; align-items: center;">
+            <div class="card-body text-center py-3">
+                <i class="fas fa-book fa-2x mb-2"></i>
+                <div class="stats-counter" data-target="{{ total_books }}" style="font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0;">0</div>
+                <p class="mb-0 opacity-75" style="font-size: 0.9rem; line-height: 0.00;">Total Books</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card" style="background: linear-gradient(135deg, var(--success-color), #059669); color: white; height: 160px; display: flex; align-items: center;">
+            <div class="card-body text-center py-3">
+                <i class="fas fa-database fa-2x mb-2"></i>
+                <h2 class="mb-1 stats-counter" style="font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0;">Active</h2>
+                <p class="mb-0 opacity-75" style="font-size: 0.9rem; line-height: 1.3;">Database Status</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card" style="background: linear-gradient(135deg, var(--accent-color), #0891b2); color: white; height: 160px; display: flex; align-items: center;">
+            <div class="card-body text-center py-3">
+                <i class="fas fa-cogs fa-2x mb-2"></i>
+                <h2 class="mb-1 stats-counter" style="font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0;">CRUD</h2>
+                <p class="mb-0 opacity-75" style="font-size: 0.9rem; line-height: 1.3;">Operations Ready</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card" style="background: linear-gradient(135deg, var(--warning-color), #d97706); color: white; height: 160px; display: flex; align-items: center;">
+            <div class="card-body text-center py-3">
+                <i class="fas fa-fire fa-2x mb-2"></i>
+                <h2 class="mb-1 stats-counter" style="font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0;">Firebase</h2>
+                <p class="mb-0 opacity-75" style="font-size: 0.9rem; line-height: 1.3;">Powered</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Search Section -->
+<div class="search-section enhancement-gradient">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="mb-0"><i class="fas fa-search me-2"></i>Smart Search</h5>
+        <div class="d-flex gap-2">
+            <span class="quick-filter" data-filter="all">All</span>
+            <span class="quick-filter" data-filter="Fiction">Fiction</span>
+            <span class="quick-filter" data-filter="Non-Fiction">Non-Fiction</span>
+            <span class="quick-filter" data-filter="Mystery">Mystery</span>
+        </div>
+    </div>
+    <form method="GET" id="searchForm">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="{{ search_form.search_type.id_for_label }}" class="form-label">Search Type:</label>
+                    {{ search_form.search_type }}
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="form-group">
+                    <label for="{{ search_form.search_query.id_for_label }}" class="form-label">Search Query:</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-search search-icon"></i>
+                        {{ search_form.search_query }}
+                        <div class="search-suggestions" id="searchSuggestions"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label class="form-label" style="visibility: hidden;">Search:</label>
+                    <button type="submit" class="btn btn-primary w-100" id="searchBtn">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% if search_performed %}
+        <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+            <span class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Found <strong>{{ total_books }}</strong> book{{ total_books|pluralize }} matching your search
+            </span>
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-times"></i> Clear Search
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Enhanced Quick Actions Toolbar -->
+<div class="toolbar enhancement-gradient">
+    <div class="d-flex align-items-center">
+        <span class="fw-semibold text-dark me-4">
+            <i class="fas fa-layer-group me-1"></i>
+            Library Collection
+        </span>
+        <span class="text-muted">{{ total_books }} items</span>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        <a href="{% url 'statistics' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-chart-pie"></i> Analytics
+        </a>
+        <a href="{% url 'api_books' %}" class="btn btn-outline-secondary btn-sm" target="_blank">
+            <i class="fas fa-download"></i> Export
+        </a>
+    </div>
+</div>
+
+<!-- Enhanced Books Data Table -->
+<div class="data-table-wrapper">
+    {% if books %}
+        <table class="table table-hover mb-0" id="booksTable">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">#</th>
+                    <th style="width: 80px;">
+                        <i class="fas fa-hashtag me-1"></i>ID
+                    </th>
+                    <th>
+                        <i class="fas fa-book me-1"></i>Book Title
+                    </th>
+                    <th style="width: 200px;">
+                        <i class="fas fa-user me-1"></i>Author
+                    </th>
+                    <th style="width: 120px;">
+                        <i class="fas fa-tags me-1"></i>Genre
+                    </th>
+                    <th style="width: 160px;">
+                        <i class="fas fa-cog me-1"></i>Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr class="book-row" data-genre="{{ book.genre }}" onclick="showBookDetails('{{ book.doc_id }}', '{{ book.book_title }}', '{{ book.author_name }}', '{{ book.genre }}')">
+                    <td class="text-muted fw-medium">{{ forloop.counter }}</td>
+                    <td>
+                        <span class="book-id-badge">{{ book.id }}</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'view_book' book.doc_id %}" class="book-title-link">
+                            {{ book.book_title }}
+                        </a>
+                    </td>
+                    <td class="text-muted">
+                        <i class="fas fa-user-circle me-1"></i>{{ book.author_name }}
+                    </td>
+                    <td>
+                        <a href="{% url 'books_by_genre' book.genre %}" 
+                           class="badge bg-primary text-decoration-none genre-badge-link">
+                            {{ book.genre }}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="action-buttons" onclick="event.stopPropagation();">
+                            <a href="{% url 'view_book' book.doc_id %}" 
+                               class="btn btn-outline-info btn-sm action-btn" 
+                               title="View Details"
+                               data-bs-toggle="tooltip">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'edit_book' book.doc_id %}" 
+                               class="btn btn-outline-warning btn-sm action-btn" 
+                               title="Edit Book"
+                               data-bs-toggle="tooltip">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'delete_book' book.doc_id %}" 
+                               class="btn btn-outline-danger btn-sm action-btn" 
+                               title="Delete Book"
+                               data-bs-toggle="tooltip"
+                               onclick="return confirmDelete('{{ book.book_title }}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-book-open"></i>
+            <h4 class="mt-3 mb-2">
+                {% if search_performed %}
+                    No books found
+                {% else %}
+                    Your library is empty
+                {% endif %}
+            </h4>
+            <p class="text-muted mb-4">
+                {% if search_performed %}
+                    Try adjusting your search criteria or 
+                    <a href="{% url 'home' %}" class="text-decoration-none">view all books</a>
+                {% else %}
+                    Start building your collection by adding your first book
+                {% endif %}
+            </p>
+            {% if not search_performed %}
+                <a href="{% url 'add_book' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus-circle"></i> Add Your First Book
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Book Details Modal -->
+<div class="modal fade" id="bookDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-book me-2"></i>Book Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">
+                            <i class="fas fa-book me-1"></i>Title
+                        </h6>
+                        <p id="modalTitle" class="mb-3"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">
+                            <i class="fas fa-user me-1"></i>Author
+                        </h6>
+                        <p id="modalAuthor" class="mb-3"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">
+                            <i class="fas fa-tags me-1"></i>Genre
+                        </h6>
+                        <p id="modalGenre" class="mb-3"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">
+                            <i class="fas fa-clock me-1"></i>Status
+                        </h6>
+                        <p class="mb-3">
+                            <span class="badge bg-success">Available</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="modalEditBtn" class="btn btn-warning">
+                    <i class="fas fa-edit me-1"></i>Edit Book
+                </a>
+                <a href="#" id="modalViewBtn" class="btn btn-primary">
+                    <i class="fas fa-eye me-1"></i>View Full Details
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Info Cards -->
+{% if books %}
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card enhancement-gradient">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle me-2"></i>Library Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <i class="fas fa-books fa-2x text-primary mb-2"></i>
+                            <h5 class="mb-1">{{ total_books }}</h5>
+                            <small class="text-muted">Total Books</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <i class="fas fa-users fa-2x text-success mb-2"></i>
+                            <h5 class="mb-1">Active</h5>
+                            <small class="text-muted">System Status</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <i class="fas fa-cloud fa-2x text-info mb-2"></i>
+                            <h5 class="mb-1">Cloud</h5>
+                            <small class="text-muted">Firebase Storage</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05)); border: 1px solid rgba(16, 185, 129, 0.2);">
+            <div class="card-header bg-transparent">
+                <h6 class="text-success mb-0">
+                    <i class="fas fa-rocket me-2"></i>Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'add_book' %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>Add New Book
+                    </a>
+                    <a href="{% url 'statistics' %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-chart-bar me-1"></i>View Statistics
+                    </a>
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportData()">
+                        <i class="fas fa-download me-1"></i>Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Animated counter for statistics
+    function animateCounter(element, target) {
+        let current = 0;
+        const increment = target / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, 30);
+    }
+    
+    // Animate all counters
+    document.querySelectorAll('.stats-counter[data-target]').forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        animateCounter(counter, target);
+    });
+    
+    // Quick filter functionality
+    document.querySelectorAll('.quick-filter').forEach(filter => {
+        filter.addEventListener('click', function() {
+            document.querySelectorAll('.quick-filter').forEach(f => f.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filterValue = this.getAttribute('data-filter');
+            const rows = document.querySelectorAll('.book-row');
+            
+            rows.forEach(row => {
+                if (filterValue === 'all' || row.getAttribute('data-genre') === filterValue) {
+                    row.style.display = 'table-row';
+                    row.style.animation = 'slideInUp 0.3s ease';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Search suggestions
+    const searchInput = document.querySelector('input[name="search_query"]');
+    const searchSuggestions = document.getElementById('searchSuggestions');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            if (query.length > 1) {
+                // Show suggestions based on existing books
+                const suggestions = [];
+                document.querySelectorAll('.book-title-link').forEach(link => {
+                    const title = link.textContent.toLowerCase();
+                    if (title.includes(query) && suggestions.length < 5) {
+                        suggestions.push(link.textContent);
+                    }
+                });
+                
+                if (suggestions.length > 0) {
+                    searchSuggestions.innerHTML = suggestions.map(suggestion => 
+                        `<div class="suggestion-item" onclick="selectSuggestion('${suggestion}')">${suggestion}</div>`
+                    ).join('');
+                    searchSuggestions.style.display = 'block';
+                } else {
+                    searchSuggestions.style.display = 'none';
+                }
+            } else {
+                searchSuggestions.style.display = 'none';
+            }
+        });
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+                searchSuggestions.style.display = 'none';
+            }
+        });
+    }
+    
+    // Refresh button functionality
+    document.getElementById('refreshBtn')?.addEventListener('click', function() {
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+        this.disabled = true;
+        
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    });
+    
+    // Add loading skeleton for table rows on search
+    document.getElementById('searchForm')?.addEventListener('submit', function() {
+        const submitBtn = document.getElementById('searchBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+        submitBtn.disabled = true;
+        
+        // Add loading animation to table
+        const tableBody = document.querySelector('#booksTable tbody');
+        if (tableBody) {
+            tableBody.style.opacity = '0.5';
+        }
+    });
+});
+
+// Function to select search suggestion
+function selectSuggestion(suggestion) {
+    document.querySelector('input[name="search_query"]').value = suggestion;
+    document.getElementById('searchSuggestions').style.display = 'none';
+    document.getElementById('searchForm').submit();
+}
+
+// Enhanced book details modal
+function showBookDetails(docId, title, author, genre) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalAuthor').textContent = author;
+    document.getElementById('modalGenre').innerHTML = `<span class="badge bg-primary">${genre}</span>`;
+    
+    // Update modal buttons
+    const editBtn = document.getElementById('modalEditBtn');
+    const viewBtn = document.getElementById('modalViewBtn');
+    
+    editBtn.href = `/edit/${docId}/`;
+    viewBtn.href = `/view/${docId}/`;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('bookDetailsModal'));
+    modal.show();
+}
+
+// Export data functionality
+function exportData() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Exporting...';
+    btn.disabled = true;
+    
+    // Simulate export process
+    setTimeout(() => {
+        window.open('/api/books/', '_blank');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 1500);
+}
+
+// Add smooth scrolling for anchors
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Add hover effect to stats cards
+document.querySelectorAll('.stats-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-5px) scale(1.02)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+    });
+});
+</script>
+{% endblock %} 

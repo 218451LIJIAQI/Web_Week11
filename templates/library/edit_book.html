@@ -1,0 +1,165 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Edit Book - Library Management System{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="page-title"><i class="fas fa-edit"></i> Edit Book</h1>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Library
+        </a>
+    </div>
+</div>
+
+<!-- Form Section -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-book"></i> Edit Book Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.id.id_for_label }}" class="form-label">
+                                <strong>{{ form.id.label }}</strong>
+                            </label>
+                            {{ form.id }}
+                            {% if form.id.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.id.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.genre.id_for_label }}" class="form-label">
+                                <strong>{{ form.genre.label }}</strong>
+                            </label>
+                            {{ form.genre }}
+                            {% if form.genre.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.genre.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.book_title.id_for_label }}" class="form-label">
+                            <strong>{{ form.book_title.label }}</strong>
+                        </label>
+                        {{ form.book_title }}
+                        {% if form.book_title.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.book_title.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.author_name.id_for_label }}" class="form-label">
+                            <strong>{{ form.author_name.label }}</strong>
+                        </label>
+                        {{ form.author_name }}
+                        {% if form.author_name.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.author_name.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="border-top pt-3 mt-4">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Update Book
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Current Book Info -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> Current Book Details</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>ID:</strong></td>
+                        <td>{{ book.id }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Title:</strong></td>
+                        <td>{{ book.book_title }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Author:</strong></td>
+                        <td>{{ book.author_name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Genre:</strong></td>
+                        <td>{{ book.genre }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation feedback
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input, select');
+        
+        inputs.forEach(function(input) {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.add('is-valid');
+                    this.classList.remove('is-invalid');
+                } else {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                }
+            });
+        });
+        
+        // Highlight changes
+        inputs.forEach(function(input) {
+            const originalValue = input.value;
+            input.addEventListener('input', function() {
+                if (this.value !== originalValue) {
+                    this.style.borderColor = '#ffc107';
+                    this.style.backgroundColor = '#fff3cd';
+                } else {
+                    this.style.borderColor = '';
+                    this.style.backgroundColor = '';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,6 @@
+# Firebase credentials (security) - Keep this for safety
+*firebase*adminsdk*.json
+
+# Temporary files that shouldn't be in version control
+*.tmp
+*.temp 

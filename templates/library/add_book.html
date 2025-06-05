@@ -1,0 +1,626 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Add New Book - Library Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-floating {
+        position: relative;
+    }
+    
+    .form-floating > .form-control:focus ~ .floating-label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ .floating-label {
+        opacity: .65;
+        transform: scale(.85) translateY(-0.5rem) translateX(0.15rem);
+    }
+    
+    .floating-label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        padding: 0.875rem 1.25rem;
+        pointer-events: none;
+        border: 1px solid transparent;
+        transform-origin: 0 0;
+        transition: opacity .1s ease-in-out,transform .1s ease-in-out;
+    }
+    
+    .form-control:invalid {
+        border-color: var(--danger-color);
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+    }
+    
+    .form-control:valid {
+        border-color: var(--success-color);
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+    }
+    
+    .progress-step {
+        background: var(--gray-200);
+        height: 4px;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .progress-fill {
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    
+    .field-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.1rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .field-wrapper {
+        position: relative;
+    }
+    
+    .field-wrapper .form-control:focus + .field-icon {
+        opacity: 0.7;
+    }
+    
+    .genre-preview {
+        display: none;
+        margin-top: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.875rem;
+        animation: slideInUp 0.3s ease;
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .success-checkmark {
+        display: none;
+        color: var(--success-color);
+        margin-left: 0.5rem;
+        animation: bounceIn 0.5s ease;
+    }
+    
+    @keyframes bounceIn {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    
+    .enhancement-card {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Progress Indicator -->
+<div class="progress-step">
+    <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="page-title">
+            <i class="fas fa-plus-circle"></i> 
+            Add New Book
+        </h1>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    <p class="text-muted mt-2 mb-0">
+        <i class="fas fa-info-circle me-1"></i>
+        Fill out the form below to add a new book to your library collection
+    </p>
+</div>
+
+<!-- Form Section -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card enhancement-card">
+            <div class="card-header">
+                <h5><i class="fas fa-edit me-2"></i>Book Information</h5>
+                <small class="text-muted d-block mt-1">All fields are required to create a complete book record</small>
+            </div>
+            <div class="card-body">
+                <form method="POST" novalidate id="bookForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.id.id_for_label }}" class="form-label">
+                                <i class="fas fa-hashtag me-1 text-primary"></i>
+                                {{ form.id.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="field-wrapper">
+                                {{ form.id }}
+                                <i class="fas fa-check field-icon text-success" id="idCheck"></i>
+                            </div>
+                            {% if form.id.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.id.errors %}
+                                        <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Enter a unique positive number (e.g., 1, 2, 100)
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.genre.id_for_label }}" class="form-label">
+                                <i class="fas fa-tags me-1 text-primary"></i>
+                                {{ form.genre.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="field-wrapper">
+                                {{ form.genre }}
+                                <i class="fas fa-check field-icon text-success" id="genreCheck"></i>
+                            </div>
+                            <div class="genre-preview" id="genrePreview">
+                                <i class="fas fa-tag me-1"></i>
+                                Selected: <span id="selectedGenre"></span>
+                            </div>
+                            {% if form.genre.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.genre.errors %}
+                                        <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Choose the most appropriate category
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.book_title.id_for_label }}" class="form-label">
+                            <i class="fas fa-book me-1 text-primary"></i>
+                            {{ form.book_title.label }}
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="field-wrapper">
+                            {{ form.book_title }}
+                            <i class="fas fa-check field-icon text-success" id="titleCheck"></i>
+                        </div>
+                        {% if form.book_title.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.book_title.errors %}
+                                    <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            <i class="fas fa-pen me-1"></i>
+                            Enter the complete title as it appears on the book
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.author_name.id_for_label }}" class="form-label">
+                            <i class="fas fa-user-edit me-1 text-primary"></i>
+                            {{ form.author_name.label }}
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="field-wrapper">
+                            {{ form.author_name }}
+                            <i class="fas fa-check field-icon text-success" id="authorCheck"></i>
+                        </div>
+                        {% if form.author_name.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.author_name.errors %}
+                                    <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            <i class="fas fa-signature me-1"></i>
+                            Enter the full name of the author (First Last)
+                        </small>
+                    </div>
+                    
+                    <!-- Form Validation Summary -->
+                    <div class="alert alert-info" id="validationSummary" style="display: none;">
+                        <h6><i class="fas fa-clipboard-check me-2"></i>Form Status</h6>
+                        <div id="validationItems"></div>
+                    </div>
+                    
+                    <div class="border-top pt-4 d-flex justify-content-between align-items-center">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="text-muted" id="formProgress">0% complete</span>
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                <i class="fas fa-save"></i> Add Book to Library
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Enhanced Instructions Panel -->
+    <div class="col-lg-4">
+        <div class="card enhancement-card">
+            <div class="card-header">
+                <h6><i class="fas fa-lightbulb me-2"></i>Smart Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <div class="guideline-item mb-3" id="guideline-id">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="guideline-icon">
+                                <i class="fas fa-hashtag text-primary"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <strong class="d-block">Book ID</strong>
+                            <small class="text-muted">Must be a unique positive number</small>
+                            <div class="guideline-status mt-1" style="display: none;">
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>Valid format
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guideline-item mb-3" id="guideline-title">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="guideline-icon">
+                                <i class="fas fa-book text-primary"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <strong class="d-block">Book Title</strong>
+                            <small class="text-muted">Complete title of the book</small>
+                            <div class="guideline-status mt-1" style="display: none;">
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>Title entered
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guideline-item mb-3" id="guideline-author">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="guideline-icon">
+                                <i class="fas fa-user-edit text-primary"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <strong class="d-block">Author Name</strong>
+                            <small class="text-muted">Full name of the author</small>
+                            <div class="guideline-status mt-1" style="display: none;">
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>Author entered
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guideline-item mb-4" id="guideline-genre">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="guideline-icon">
+                                <i class="fas fa-tags text-primary"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <strong class="d-block">Genre</strong>
+                            <small class="text-muted">Select appropriate category</small>
+                            <div class="guideline-status mt-1" style="display: none;">
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>Genre selected
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-top pt-3">
+                    <h6 class="mb-2">
+                        <i class="fas fa-fire me-1 text-warning"></i>
+                        Popular Genres
+                    </h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        <span class="badge bg-light text-dark border genre-badge" data-genre="Fiction">Fiction</span>
+                        <span class="badge bg-light text-dark border genre-badge" data-genre="Non-Fiction">Non-Fiction</span>
+                        <span class="badge bg-light text-dark border genre-badge" data-genre="Mystery">Mystery</span>
+                        <span class="badge bg-light text-dark border genre-badge" data-genre="Romance">Romance</span>
+                        <span class="badge bg-light text-dark border genre-badge" data-genre="Sci-Fi">Sci-Fi</span>
+                        <span class="badge bg-light text-dark border genre-badge" data-genre="Fantasy">Fantasy</span>
+                        <span class="badge bg-light text-dark border genre-badge" data-genre="Biography">Biography</span>
+                        <span class="badge bg-light text-dark border genre-badge" data-genre="History">History</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Quick Stats -->
+        <div class="card mt-3 enhancement-card">
+            <div class="card-header">
+                <h6><i class="fas fa-chart-bar me-2"></i>System Status</h6>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <div class="status-indicator mb-2">
+                        <i class="fas fa-database fa-2x text-success"></i>
+                    </div>
+                    <h5 class="text-success mb-1">
+                        <i class="fas fa-wifi me-1"></i>Connected
+                    </h5>
+                    <small class="text-muted">Firebase Database Ready</small>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded">
+                            <i class="fas fa-clock text-info"></i>
+                            <small class="d-block text-muted">Real-time</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded">
+                            <i class="fas fa-shield-alt text-success"></i>
+                            <small class="d-block text-muted">Secure</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Developer Info Card -->
+        <div class="card mt-3" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05)); border: 1px solid rgba(139, 92, 246, 0.2);">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-primary mb-0">
+                    <i class="fas fa-user-graduate me-2"></i>Developer
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="fas fa-user-circle fa-2x text-primary mb-2"></i>
+                    <h6 class="mb-1 text-primary">LI JIAQI</h6>
+                    <small class="text-muted d-block">Matric: 218451</small>
+                    <small class="text-muted">UPM Software Engineering</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tips Card -->
+        <div class="card mt-3" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05)); border: 1px solid rgba(16, 185, 129, 0.2);">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-success mb-0">
+                    <i class="fas fa-tips me-2"></i>Pro Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="tip-item mb-2">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    <small>Use descriptive, complete titles</small>
+                </div>
+                <div class="tip-item mb-2">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    <small>Include author's full name</small>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    <small>Double-check ID uniqueness</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bookForm');
+    const idField = document.getElementById('{{ form.id.id_for_label }}');
+    const titleField = document.getElementById('{{ form.book_title.id_for_label }}');
+    const authorField = document.getElementById('{{ form.author_name.id_for_label }}');
+    const genreField = document.getElementById('{{ form.genre.id_for_label }}');
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const progressFill = document.getElementById('progressFill');
+    const formProgress = document.getElementById('formProgress');
+    
+    // Form validation and progress tracking
+    function updateFormProgress() {
+        let filledFields = 0;
+        const totalFields = 4;
+        
+        // Check each field
+        const fields = [
+            { element: idField, check: 'idCheck', guideline: 'guideline-id' },
+            { element: titleField, check: 'titleCheck', guideline: 'guideline-title' },
+            { element: authorField, check: 'authorCheck', guideline: 'guideline-author' },
+            { element: genreField, check: 'genreCheck', guideline: 'guideline-genre' }
+        ];
+        
+        fields.forEach(field => {
+            const checkIcon = document.getElementById(field.check);
+            const guideline = document.getElementById(field.guideline);
+            const status = guideline.querySelector('.guideline-status');
+            
+            if (field.element.value.trim() !== '') {
+                filledFields++;
+                checkIcon.style.opacity = '1';
+                status.style.display = 'block';
+                guideline.style.background = 'rgba(16, 185, 129, 0.05)';
+                guideline.style.borderRadius = '8px';
+                guideline.style.padding = '0.5rem';
+            } else {
+                checkIcon.style.opacity = '0';
+                status.style.display = 'none';
+                guideline.style.background = 'transparent';
+                guideline.style.padding = '0';
+            }
+        });
+        
+        const progress = (filledFields / totalFields) * 100;
+        progressFill.style.width = progress + '%';
+        formProgress.textContent = Math.round(progress) + '% complete';
+        
+        // Enable submit button when all fields are filled
+        if (filledFields === totalFields) {
+            submitBtn.disabled = false;
+            submitBtn.classList.add('pulse-animation');
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.classList.remove('pulse-animation');
+        }
+    }
+    
+    // Genre preview functionality
+    genreField.addEventListener('change', function() {
+        const preview = document.getElementById('genrePreview');
+        const selectedGenre = document.getElementById('selectedGenre');
+        
+        if (this.value) {
+            selectedGenre.textContent = this.value;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+        updateFormProgress();
+    });
+    
+    // Genre badge click functionality
+    document.querySelectorAll('.genre-badge').forEach(badge => {
+        badge.addEventListener('click', function() {
+            const genre = this.getAttribute('data-genre');
+            // Find and select the option
+            for (let option of genreField.options) {
+                if (option.text === genre) {
+                    genreField.value = option.value;
+                    genreField.dispatchEvent(new Event('change'));
+                    break;
+                }
+            }
+        });
+    });
+    
+    // Real-time validation
+    [idField, titleField, authorField].forEach(field => {
+        field.addEventListener('input', updateFormProgress);
+        field.addEventListener('blur', updateFormProgress);
+    });
+    
+    // ID field specific validation
+    idField.addEventListener('input', function() {
+        const value = this.value;
+        if (value && !isNaN(value) && parseInt(value) > 0) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else if (value) {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        } else {
+            this.classList.remove('is-valid', 'is-invalid');
+        }
+    });
+    
+    // Form submission with loading state
+    form.addEventListener('submit', function(e) {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding Book...';
+        submitBtn.disabled = true;
+        
+        // Add a subtle loading animation to the form
+        form.style.opacity = '0.7';
+        form.style.pointerEvents = 'none';
+    });
+    
+    // Initial progress check
+    updateFormProgress();
+    
+    // Add hover effects to genre badges
+    document.querySelectorAll('.genre-badge').forEach(badge => {
+        badge.style.cursor = 'pointer';
+        badge.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.background = 'var(--primary-color)';
+            this.style.color = 'white';
+        });
+        badge.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.background = '';
+            this.style.color = '';
+        });
+    });
+});
+
+// Add pulse animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+    
+    .guideline-icon {
+        width: 2rem;
+        height: 2rem;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .guideline-item:hover .guideline-icon {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .is-valid {
+        border-color: var(--success-color) !important;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;
+    }
+    
+    .is-invalid {
+        border-color: var(--danger-color) !important;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %} 

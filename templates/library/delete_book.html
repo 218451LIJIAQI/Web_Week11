@@ -1,0 +1,111 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Delete Book - Library Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-trash text-danger"></i> Delete Book</h1>
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Library
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading"><i class="fas fa-warning"></i> Warning!</h4>
+                    <p>You are about to permanently delete this book from the library. This action cannot be undone.</p>
+                    <hr>
+                    <p class="mb-0">Please review the book details below and confirm your decision.</p>
+                </div>
+                
+                <!-- Book Details -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6><i class="fas fa-book"></i> Book Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Book ID:</strong> <span class="badge bg-info">{{ book.id }}</span></p>
+                                <p><strong>Title:</strong> {{ book.book_title }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Author:</strong> {{ book.author_name }}</p>
+                                <p><strong>Genre:</strong> <span class="badge bg-secondary">{{ book.genre }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Confirmation Form -->
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <a href="{% url 'view_book' book.doc_id %}" class="btn btn-outline-info">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you absolutely sure you want to delete this book? This action cannot be undone.')">
+                            <i class="fas fa-trash"></i> Yes, Delete Book
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Information -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6><i class="fas fa-info-circle"></i> What happens when you delete this book?</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li><i class="fas fa-check text-success"></i> The book will be permanently removed from the Firebase database</li>
+                    <li><i class="fas fa-check text-success"></i> The book ID will become available for reuse</li>
+                    <li><i class="fas fa-check text-success"></i> All book information will be lost permanently</li>
+                    <li><i class="fas fa-exclamation-triangle text-warning"></i> This action cannot be reversed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add extra confirmation for delete action
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteForm = document.querySelector('form');
+        const deleteButton = deleteForm.querySelector('button[type="submit"]');
+        
+        deleteButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const bookTitle = "{{ book.book_title|escapejs }}";
+            const confirmMessage = `Are you absolutely sure you want to delete "${bookTitle}"?\n\nThis action cannot be undone and will permanently remove the book from the library.`;
+            
+            if (confirm(confirmMessage)) {
+                deleteForm.submit();
+            }
+        });
+    });
+</script>
+{% endblock %} 

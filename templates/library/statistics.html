@@ -1,0 +1,518 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Statistics - Library Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card-enhanced {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        height: 200px; /* 固定高度，而不是最小高度 */
+        display: flex;
+        align-items: center;
+    }
+    
+    .stats-card-enhanced::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(30%, -30%);
+    }
+    
+    .stats-card-enhanced:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .stats-card-enhanced .card-body {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding: 1.5rem;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .stats-number {
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        flex-shrink: 0; /* 防止压缩 */
+        line-height: 1.1;
+    }
+    
+    .stats-label {
+        font-size: 1rem;
+        font-weight: 500;
+        opacity: 0.9;
+        margin: 0.25rem 0;
+        flex-shrink: 0; /* 防止压缩 */
+        line-height: 1.2;
+    }
+    
+    .stats-detail {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        margin-top: 0.5rem;
+        height: 1.2rem; /* 固定高度，保持一致性 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0; /* 防止压缩 */
+    }
+    
+    .stats-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.8;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        flex-shrink: 0; /* 防止压缩 */
+    }
+    
+    /* 不同颜色的卡片 */
+    .stats-card-1 {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    }
+    
+    .stats-card-2 {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+    }
+    
+    .stats-card-3 {
+        background: linear-gradient(135deg, var(--accent-color), #0891b2);
+    }
+    
+    .stats-card-4 {
+        background: linear-gradient(135deg, var(--warning-color), #d97706);
+    }
+    
+    .chart-card {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .info-card {
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .progress-enhanced {
+        height: 8px;
+        border-radius: 10px;
+        background: rgba(99, 102, 241, 0.1);
+        overflow: hidden;
+    }
+    
+    .progress-bar-enhanced {
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        transition: width 0.8s ease;
+    }
+    
+    .genre-badge-enhanced {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 0.375rem 0.75rem;
+        border-radius: var(--border-radius-sm);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+    
+    .genre-badge-enhanced:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+        color: white;
+    }
+    
+    .table-enhanced {
+        background: white;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .table-enhanced thead th {
+        background: linear-gradient(135deg, var(--gray-800), var(--gray-700));
+        color: white;
+        border: none;
+        font-weight: 600;
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .table-enhanced tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+        vertical-align: middle;
+    }
+    
+    .table-enhanced tbody tr:hover {
+        background: var(--gray-50);
+    }
+    
+    .table-enhanced tbody tr:last-child td {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="page-title">
+            <i class="fas fa-chart-bar"></i> 
+            Library Statistics
+        </h1>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Library
+        </a>
+    </div>
+    <p class="text-muted mt-2 mb-0">
+        <i class="fas fa-info-circle me-1"></i>
+        Comprehensive analytics and insights for your library collection
+    </p>
+</div>
+
+<!-- Enhanced Overview Statistics -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card-enhanced stats-card-1 float-animation">
+            <div class="card-body">
+                <i class="fas fa-books stats-icon"></i>
+                <div class="stats-number" data-target="{{ total_books }}">0</div>
+                <p class="stats-label">Total Books</p>
+                <div class="stats-detail">Complete collection</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card-enhanced stats-card-2 float-animation">
+            <div class="card-body">
+                <i class="fas fa-users stats-icon"></i>
+                <div class="stats-number" data-target="{{ total_authors }}">0</div>
+                <p class="stats-label">Unique Authors</p>
+                <div class="stats-detail">Diverse writers</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card-enhanced stats-card-3 float-animation">
+            <div class="card-body">
+                <i class="fas fa-tags stats-icon"></i>
+                <div class="stats-number" data-target="{{ genre_counts|length }}">0</div>
+                <p class="stats-label">Different Genres</p>
+                <div class="stats-detail">Rich variety</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card-enhanced stats-card-4 float-animation">
+            <div class="card-body">
+                <i class="fas fa-crown stats-icon"></i>
+                <div class="stats-number" data-target="{{ most_popular_genre.1 }}">0</div>
+                <p class="stats-label">{{ most_popular_genre.0 }}</p>
+                <div class="stats-detail">Most Popular Genre</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Genre Distribution -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card chart-card">
+            <div class="card-header">
+                <h5><i class="fas fa-pie-chart me-2"></i>Books Distribution by Genre</h5>
+                <small class="text-muted">Detailed breakdown of your library collection</small>
+            </div>
+            <div class="card-body">
+                {% if genre_counts %}
+                    <div class="table-responsive">
+                        <table class="table table-enhanced mb-0">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-tag me-1"></i>Genre</th>
+                                    <th><i class="fas fa-book me-1"></i>Books</th>
+                                    <th><i class="fas fa-percentage me-1"></i>Percentage</th>
+                                    <th><i class="fas fa-chart-bar me-1"></i>Distribution</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for genre, count in genre_counts.items %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'books_by_genre' genre %}" class="genre-badge-enhanced">
+                                            {{ genre }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <strong class="text-primary">{{ count }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{% widthratio count total_books 100 %}%</span>
+                                    </td>
+                                    <td>
+                                        <div class="progress progress-enhanced">
+                                            <div class="progress-bar progress-bar-enhanced" role="progressbar" 
+                                                 style="width: 0%" 
+                                                 data-width="{% widthratio count total_books 100 %}%"
+                                                 aria-valuenow="{% widthratio count total_books 100 %}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-chart-bar"></i>
+                        <h4 class="mt-3 mb-2">No data available</h4>
+                        <p class="text-muted mb-4">Add some books to see statistics</p>
+                        <a href="{% url 'add_book' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Add Your First Book
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Recent Books Preview -->
+{% if all_books %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-clock me-2"></i>Recent Books Preview</h5>
+                <small class="text-muted">Quick overview of your library collection</small>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-enhanced mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag me-1"></i>ID</th>
+                                <th><i class="fas fa-book me-1"></i>Title</th>
+                                <th><i class="fas fa-user me-1"></i>Author</th>
+                                <th><i class="fas fa-tags me-1"></i>Genre</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for book in all_books|slice:":10" %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-primary">{{ book.id }}</span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'view_book' book.doc_id %}" class="text-decoration-none fw-medium">
+                                        {{ book.book_title }}
+                                    </a>
+                                </td>
+                                <td class="text-muted">
+                                    <i class="fas fa-user-circle me-1"></i>{{ book.author_name }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ book.genre }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'home' %}" class="btn btn-primary">
+                        <i class="fas fa-list"></i> View All Books
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Enhanced System Information -->
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card info-card border-0" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05)); border: 1px solid rgba(139, 92, 246, 0.2) !important;">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-primary mb-0">
+                    <i class="fas fa-user-graduate me-2"></i>Developer Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="developer-avatar mb-2">
+                        <i class="fas fa-user-circle fa-3x text-primary"></i>
+                    </div>
+                    <h6 class="mb-1 text-primary">LI JIAQI</h6>
+                    <small class="text-muted">Software Engineering Student</small>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-id-card text-primary me-3"></i>
+                    <div>
+                        <strong>Matric:</strong> 218451
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-university text-primary me-3"></i>
+                    <div>
+                        <strong>University:</strong> UPM
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-code text-primary me-3"></i>
+                    <div>
+                        <strong>Major:</strong> Software Engineering
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card info-card border-0" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), rgba(8, 145, 178, 0.05)); border: 1px solid rgba(6, 182, 212, 0.2) !important;">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>System Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-database text-info me-3"></i>
+                    <div>
+                        <strong>Database:</strong> Firebase Firestore
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fab fa-python text-info me-3"></i>
+                    <div>
+                        <strong>Framework:</strong> Django 4.2.7
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-code text-info me-3"></i>
+                    <div>
+                        <strong>Project:</strong> LibraryPro System
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-check-circle text-success me-3"></i>
+                    <div>
+                        <strong>Status:</strong> <span class="text-success">Active & Running</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card info-card border-0" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05)); border: 1px solid rgba(16, 185, 129, 0.2) !important;">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-success mb-0">
+                    <i class="fas fa-cogs me-2"></i>Available Operations
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-plus-circle text-success me-3"></i>
+                    <div>Create new books</div>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-eye text-info me-3"></i>
+                    <div>Read book details</div>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-edit text-warning me-3"></i>
+                    <div>Update book information</div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-trash-alt text-danger me-3"></i>
+                    <div>Delete books</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 动画计数器
+    function animateCounter(element, target) {
+        let current = 0;
+        const increment = target / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, 30);
+    }
+    
+    // 启动计数器动画
+    document.querySelectorAll('.stats-number[data-target]').forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        animateCounter(counter, target);
+    });
+    
+    // 动画进度条
+    setTimeout(() => {
+        document.querySelectorAll('.progress-bar-enhanced').forEach(bar => {
+            const width = bar.getAttribute('data-width');
+            bar.style.width = width;
+        });
+    }, 500);
+    
+    // 卡片悬停效果
+    document.querySelectorAll('.stats-card-enhanced').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-4px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+    
+    // 表格行悬停效果
+    document.querySelectorAll('.table-enhanced tbody tr').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.01)';
+            this.style.zIndex = '1';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.zIndex = 'auto';
+        });
+    });
+});
+</script>
+{% endblock %} 

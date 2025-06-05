@@ -1,0 +1,129 @@
+{% extends 'library/base.html' %}
+
+{% block title %}{{ book.book_title }} - Library Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-book-open"></i> Book Details</h1>
+            <div>
+                <a href="{% url 'edit_book' book.doc_id %}" class="btn btn-warning me-2">
+                    <i class="fas fa-edit"></i> Edit Book
+                </a>
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Library
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-info-circle"></i> Book Information</h5>
+                    <span class="badge bg-info">ID: {{ book.id }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h2 class="text-primary mb-3">{{ book.book_title }}</h2>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <label class="fw-bold text-muted">
+                                        <i class="fas fa-user"></i> Author:
+                                    </label>
+                                    <p class="fs-5">{{ book.author_name }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <label class="fw-bold text-muted">
+                                        <i class="fas fa-tags"></i> Genre:
+                                    </label>
+                                    <p>
+                                        <a href="{% url 'books_by_genre' book.genre %}" class="badge bg-secondary fs-6 text-decoration-none">
+                                            {{ book.genre }}
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <label class="fw-bold text-muted">
+                                        <i class="fas fa-hashtag"></i> Book ID:
+                                    </label>
+                                    <p><span class="badge bg-info fs-6">{{ book.id }}</span></p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <label class="fw-bold text-muted">
+                                        <i class="fas fa-database"></i> Document ID:
+                                    </label>
+                                    <p><code>{{ book.doc_id }}</code></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-book fa-4x text-primary mb-3"></i>
+                                <h6 class="text-muted">Book Preview</h6>
+                                <p class="small">Library Management System</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-cogs"></i> Available Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{% url 'edit_book' book.doc_id %}" class="btn btn-warning w-100 mb-2">
+                            <i class="fas fa-edit"></i> Edit Book
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'delete_book' book.doc_id %}" class="btn btn-danger w-100 mb-2"
+                           onclick="return confirmDelete('{{ book.book_title }}')">
+                            <i class="fas fa-trash"></i> Delete Book
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'books_by_genre' book.genre %}" class="btn btn-info w-100 mb-2">
+                            <i class="fas fa-list"></i> View Similar Books
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'add_book' %}" class="btn btn-success w-100 mb-2">
+                            <i class="fas fa-plus"></i> Add New Book
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
